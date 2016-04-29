@@ -1,0 +1,109 @@
+/**
+ * Red Robin scheduling algorithm.
+ * Megan Francis
+ */
+
+import java.util.*;
+
+public class RR implements Algorithm
+{
+  //List variables to keep track of what is left, finished, and started
+  private List<Task> queue;
+  private List<Task> finishedTasks;
+  private List<Task> runningTasks;
+  
+  //Task variables to hold the current and previous Tasks
+  private Task currentTask;
+  private Task prevTask;
+  
+  //Integer variables to keep track of wait, response, and turnaround times
+  private int totalResponse;
+  private int totalWait;
+  private int turnaround;
+  private int totalTasks;
+  private int prevBurst;
+  
+  public RR(List<Task> queue) {
+    this.queue = queue;
+    this.totalTasks = queue.size();
+    this.finishedTasks = new ArrayList<Task>(totalTasks);
+    this.runningTasks = new ArrayList<Task>(totalTasks);
+    this.totalResponse = 0;
+    this.totalWait = 0;
+    this.turnaround = 0;
+    this.prevBurst = 0;
+    
+  }
+  
+  public void schedule() {
+    System.out.println("Round Robin Scheduling \n");
+    //Variable keeping track of how long the next task should run
+    int runDuration;
+    
+    //Runs through all tasks in queue
+    while (!queue.isEmpty()) {
+      //Find next task
+      currentTask = pickNextTask();
+      
+      //If a task hasn't been previously started, add it's time
+      //to the response time
+      if(!runningTasks.contains(currentTask)){
+        totalResponse += CPU.getTime();
+      }
+      //If it has been previously started, make sure it wasn't just
+      //runing, & then add how long it's been waiting
+      else{
+        if(!currentTask.equals(prevTask)){
+          totalWait += prevBurst;
+        }
+      }
+      if(currentTask.getBurst() < 10)
+        runDuration = currentTask.getBurst();
+      else
+        runDuration = 10;
+      prevBurst = runDuration;
+      CPU.run(currentTask, runDuration);
+      currentTask.setBurst(currentTask.getBurst()-runDuration);
+      prevTask = currentTask;
+      if (currentTask.getBurst()>0){
+        queue.add(currentTask);
+        runningTasks.add(currentTask);
+      }
+      else{
+        finishedTasks.add(currentTask);
+        runningTasks.remove(currentTask);
+        turnaround += CPU.getTime();
+      }
+    }
+  }
+  
+  public Task pickNextTask() {
+    Task temp;
+    Task nextTask = null;
+    int highTask = 0;
+    for(int i = 0; i<queue.size(); i++){
+      temp = queue.get(i);
+      if(temp.getPriority()>highTask){
+        highTask = temp.getPriority();
+        nextTask = temp;
+      }
+    }
+    queue.remove(nextTask);
+    return nextTask;
+  }
+  
+
+  
+  public double getAverageResponseTime() {
+    return totalResponse/totalTasks;
+  }
+  
+  public double getAverageTurnaroundTime() {
+    return turnaround/totalTasks;
+  }
+  
+  public double getAverageWaitTime() {
+    return (totalWait+totalResponse)/totalTasks;
+  }
+}
+
