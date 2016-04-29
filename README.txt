@@ -1,6 +1,5 @@
 Scheduling Algorithms
 Operating Systems, Spring 2016
-Megan Francis
 
 This program is an assignment from my Operating Systems class. It is designed to simulate scheduling algorithms for a CPU. It includes the algorithms First Come First Serve, Shortest Job First, Priority, and Round Robin.
 
